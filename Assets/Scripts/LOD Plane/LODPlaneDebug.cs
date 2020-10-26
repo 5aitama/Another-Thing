@@ -10,22 +10,45 @@ public class LODPlaneDebug : MonoBehaviour
     [SerializeField]
     public Procedural.Directions neighboringPlanes;
 
+    public Material material;
+
+    private void Start()
+    {
+        var planeGameObject = new GameObject("Plane");
+
+        var m = new Mesh();
+        var mf = planeGameObject.AddComponent<MeshFilter>();
+        var mc = planeGameObject.AddComponent<MeshCollider>();
+        
+        planeGameObject.AddComponent<MeshRenderer>().material = material;
+
+        var LODPlane = new Procedural.LODPlane(size, resolutions);
+        LODPlane.SetNeighbors(neighboringPlanes);
+        LODPlane.ConstructPlane(transform.position, quaternion.Euler(math.radians(transform.rotation.eulerAngles)), out NativeArray<float3> vertices, out NativeList<int> triangles, Allocator.Temp);
+
+        m.SetVertices(vertices);
+        m.SetIndices<int>(triangles, MeshTopology.Triangles, 0);
+        m.RecalculateNormals();
+        m.RecalculateBounds();
+
+        mf.mesh = m;
+        mc.sharedMesh = m;
+    }
+
     private void OnDrawGizmos()
     {
         var LODPlane = new Procedural.LODPlane(size, resolutions);
 
         LODPlane.SetNeighbors(neighboringPlanes);
-        LODPlane.ConstructPlane(transform.position, out NativeArray<float3> vertices, out NativeList<int3> triangles, Allocator.Temp);
+        LODPlane.ConstructPlane(transform.position, quaternion.Euler(math.radians(transform.rotation.eulerAngles)), out NativeArray<float3> vertices, out NativeList<int> triangles, Allocator.Temp);
 
-        Debug.Log($"LODPlane vertex amount: {vertices.Length}, triangle amount: {triangles.Length} ({triangles.Length * 3} indices)");
+        // Debug.Log($"LODPlane vertex amount: {vertices.Length}, triangle amount: {triangles.Length} ({triangles.Length * 3} indices)");
 
-        for(var t = 0; t < triangles.Length; t++)
+        for(var t = 0; t < triangles.Length; t += 3)
         {
-            var triangle = triangles[t];
-
-            Gizmos.DrawLine(vertices[triangle.x], vertices[triangle.y]);
-            Gizmos.DrawLine(vertices[triangle.y], vertices[triangle.z]);
-            Gizmos.DrawLine(vertices[triangle.z], vertices[triangle.x]);
+            Gizmos.DrawLine(vertices[triangles[t    ]], vertices[triangles[t + 1]]);
+            Gizmos.DrawLine(vertices[triangles[t + 1]], vertices[triangles[t + 2]]);
+            Gizmos.DrawLine(vertices[triangles[t + 2]], vertices[triangles[t    ]]);
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Procedural
         public int2 Resolution  { get; private set; }
         public byte Neighbors   { get; private set; }
 
-        public static int3[] GetSquareTrianglesFor(
+        public static int[] GetSquareTrianglesFor(
             in Directions planeConfig, 
             in Directions squareConfig, 
             in int2 squarePosition, 
@@ -45,70 +45,70 @@ namespace Procedural
 
             switch((byte)squareConfig)
             {
-                case 0x0: return new int3[] 
+                case 0x0: return new int[] 
                 { 
-                    new int3(edgeIndices[0], edgeIndices[2], edgeIndices[4]), 
-                    new int3(edgeIndices[0], edgeIndices[4], edgeIndices[6]),
+                    edgeIndices[0], edgeIndices[2], edgeIndices[4], 
+                    edgeIndices[0], edgeIndices[4], edgeIndices[6],
                 };
 
-                case 0x1: return new int3[] 
+                case 0x1: return new int[] 
                 {
-                    new int3(edgeIndices[1], edgeIndices[2], edgeIndices[4]),
-                    new int3(edgeIndices[1], edgeIndices[4], edgeIndices[6]),
-                    new int3(edgeIndices[1], edgeIndices[6], edgeIndices[0]),
+                    edgeIndices[1], edgeIndices[2], edgeIndices[4],
+                    edgeIndices[1], edgeIndices[4], edgeIndices[6],
+                    edgeIndices[1], edgeIndices[6], edgeIndices[0],
                 };
 
-                case 0x2: return new int3[]
+                case 0x2: return new int[]
                 {
-                    new int3(edgeIndices[3], edgeIndices[4], edgeIndices[6]),
-                    new int3(edgeIndices[3], edgeIndices[6], edgeIndices[0]),
-                    new int3(edgeIndices[3], edgeIndices[0], edgeIndices[2]),
+                    edgeIndices[3], edgeIndices[4], edgeIndices[6],
+                    edgeIndices[3], edgeIndices[6], edgeIndices[0],
+                    edgeIndices[3], edgeIndices[0], edgeIndices[2],
                 };
 
-                case 0x4: return new int3[]
+                case 0x4: return new int[]
                 {
-                    new int3(edgeIndices[5], edgeIndices[6], edgeIndices[0]),
-                    new int3(edgeIndices[5], edgeIndices[0], edgeIndices[2]),
-                    new int3(edgeIndices[5], edgeIndices[2], edgeIndices[4]),
+                    edgeIndices[5], edgeIndices[6], edgeIndices[0],
+                    edgeIndices[5], edgeIndices[0], edgeIndices[2],
+                    edgeIndices[5], edgeIndices[2], edgeIndices[4],
                 };
 
-                case 0x8: return new int3[]
+                case 0x8: return new int[]
                 {
-                    new int3(edgeIndices[7], edgeIndices[0], edgeIndices[2]),
-                    new int3(edgeIndices[7], edgeIndices[2], edgeIndices[4]),
-                    new int3(edgeIndices[7], edgeIndices[4], edgeIndices[6]),
+                    edgeIndices[7], edgeIndices[0], edgeIndices[2],
+                    edgeIndices[7], edgeIndices[2], edgeIndices[4],
+                    edgeIndices[7], edgeIndices[4], edgeIndices[6],
                 };
 
-                case 0x3: return new int3[]
+                case 0x3: return new int[]
                 {
-                    new int3(edgeIndices[6], edgeIndices[0], edgeIndices[1]),
-                    new int3(edgeIndices[6], edgeIndices[1], edgeIndices[2]),
-                    new int3(edgeIndices[6], edgeIndices[2], edgeIndices[3]),
-                    new int3(edgeIndices[6], edgeIndices[3], edgeIndices[4]),
+                    edgeIndices[6], edgeIndices[0], edgeIndices[1],
+                    edgeIndices[6], edgeIndices[1], edgeIndices[2],
+                    edgeIndices[6], edgeIndices[2], edgeIndices[3],
+                    edgeIndices[6], edgeIndices[3], edgeIndices[4],
                 };
 
-                case 0x6: return new int3[]
+                case 0x6: return new int[]
                 {
-                    new int3(edgeIndices[0], edgeIndices[2], edgeIndices[3]),
-                    new int3(edgeIndices[0], edgeIndices[3], edgeIndices[4]),
-                    new int3(edgeIndices[0], edgeIndices[4], edgeIndices[5]),
-                    new int3(edgeIndices[0], edgeIndices[5], edgeIndices[6]),
+                    edgeIndices[0], edgeIndices[2], edgeIndices[3],
+                    edgeIndices[0], edgeIndices[3], edgeIndices[4],
+                    edgeIndices[0], edgeIndices[4], edgeIndices[5],
+                    edgeIndices[0], edgeIndices[5], edgeIndices[6],
                 };
 
-                case 0xC: return new int3[]
+                case 0xC: return new int[]
                 {
-                    new int3(edgeIndices[2], edgeIndices[4], edgeIndices[5]),
-                    new int3(edgeIndices[2], edgeIndices[5], edgeIndices[6]),
-                    new int3(edgeIndices[2], edgeIndices[6], edgeIndices[7]),
-                    new int3(edgeIndices[2], edgeIndices[7], edgeIndices[0]),
+                    edgeIndices[2], edgeIndices[4], edgeIndices[5],
+                    edgeIndices[2], edgeIndices[5], edgeIndices[6],
+                    edgeIndices[2], edgeIndices[6], edgeIndices[7],
+                    edgeIndices[2], edgeIndices[7], edgeIndices[0],
                 };
 
-                case 0x9: return new int3[]
+                case 0x9: return new int[]
                 {
-                    new int3(edgeIndices[4], edgeIndices[6], edgeIndices[7]),
-                    new int3(edgeIndices[4], edgeIndices[7], edgeIndices[0]),
-                    new int3(edgeIndices[4], edgeIndices[0], edgeIndices[1]),
-                    new int3(edgeIndices[4], edgeIndices[1], edgeIndices[2]),
+                    edgeIndices[4], edgeIndices[6], edgeIndices[7],
+                    edgeIndices[4], edgeIndices[7], edgeIndices[0],
+                    edgeIndices[4], edgeIndices[0], edgeIndices[1],
+                    edgeIndices[4], edgeIndices[1], edgeIndices[2],
                 };
 
                 default: throw new System.IndexOutOfRangeException($"This configuration is not supported : {((byte)squareConfig).ToString("X2")}");
@@ -129,7 +129,12 @@ namespace Procedural
         public bool HavePlaneAt(in Directions directions)
             => ((byte)directions & Neighbors) == (byte)directions;
 
-        public void ConstructPlane(in float3 position, out NativeArray<float3> vertices, out NativeList<int3> triangles, Allocator allocator)
+        public void ConstructPlane(
+            in float3 position, 
+            in quaternion rotation, 
+            out NativeArray<float3> vertices, 
+            out NativeList<int> triangles, 
+            Allocator allocator)
         {
             
             var pointAmount = Resolution.Amount();
@@ -142,14 +147,14 @@ namespace Procedural
 
             var sideArraysCounter = new int4(0);
 
-            triangles = new NativeList<int3>(Allocator.Temp);
+            triangles = new NativeList<int>(Allocator.Temp);
 
             for(var i = 0; i < pointAmount; i++)
             {
                 var localPos = i.To2D(Resolution);
                 var worldPos = localPos * offset + position.xy;
                 
-                _vertices[i] = new float3(worldPos.xy, 0);
+                _vertices[i] = math.mul(rotation, new float3(worldPos.xy, position.z));
 
                 var minEdges = localPos == 0;
                 var maxEdges = localPos == Resolution - 1;
@@ -159,25 +164,25 @@ namespace Procedural
                 if(minEdges.x && !minEdges.y && HavePlaneAt(Directions.West))
                 {
                     var p = worldPos - new float2(0, offset.y) / 2f;
-                    sides[sideArraysCounter.x++] = new float3(p.xy, 0);
+                    sides[sideArraysCounter.x++] = math.mul(rotation, new float3(p.xy, position.z));
                 }
 
                 if(maxEdges.y && !minEdges.x && HavePlaneAt(Directions.North))
                 {
                     var p = worldPos - new float2(offset.x, 0) / 2f;
-                    sides[edgeVertexAmount + sideArraysCounter.y++] = new float3(p.xy, 0);
+                    sides[edgeVertexAmount + sideArraysCounter.y++] = math.mul(rotation, new float3(p.xy, position.z));
                 }
 
                 if(maxEdges.x && !minEdges.y && HavePlaneAt(Directions.East))
                 {
                     var p = worldPos - new float2(0, offset.y) / 2f;
-                    sides[edgeVertexAmount * 2 + sideArraysCounter.z++] = new float3(p.xy, 0);
+                    sides[edgeVertexAmount * 2 + sideArraysCounter.z++] = math.mul(rotation, new float3(p.xy, position.z));
                 }
 
                 if(!minEdges.x && minEdges.y && HavePlaneAt(Directions.South))
                 {
                     var p = worldPos - new float2(offset.x, 0) / 2f;
-                    sides[edgeVertexAmount * 3 + sideArraysCounter.w++] = new float3(p.xy, 0);
+                    sides[edgeVertexAmount * 3 + sideArraysCounter.w++] = math.mul(rotation, new float3(p.xy, position.z));
                 }
 
                 #endregion
@@ -194,7 +199,7 @@ namespace Procedural
                 squareConfig |= minEdges2.y && HavePlaneAt(Directions.South) ? Directions.South : Directions.None;
 
                 var indices = GetSquareTrianglesFor((Directions)Neighbors, squareConfig, localPos, i, Resolution, edgeVertexAmount);
-                triangles.AddRange(new NativeArray<int3>(indices, allocator));
+                triangles.AddRange(new NativeArray<int>(indices, allocator));
             }
 
             var finalVertexArray = new NativeArray<float3>(_vertices.Length + sideArraysCounter.Sum(), allocator, NativeArrayOptions.UninitializedMemory);
