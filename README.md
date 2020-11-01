@@ -11,4 +11,4 @@ I made this project because I love the technical challenge it imposes and I love
 It also allows me to show my skills in C# and with the [Unity](https://unity.com/) game engine.
 
 ---
-Thanks to @Keksoj for telling me to put readme in my projects.
+Thanks to [Keksoj](https://github.com/Keksoj) for telling me to put readme in my projects.
