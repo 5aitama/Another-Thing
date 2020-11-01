@@ -1,7 +1,9 @@
 ﻿using Unity.Mathematics;
 using Unity.Collections;
 
-namespace Procedural
+using Saitama.Mathematics.Extensions;
+
+namespace Saitama.Procedural
 {
     public class LODPlane
     {

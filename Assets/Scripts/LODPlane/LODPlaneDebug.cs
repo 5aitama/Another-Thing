@@ -2,13 +2,15 @@
 using Unity.Collections;
 using Unity.Mathematics;
 
+using Saitama.Procedural;
+
 public class LODPlaneDebug : MonoBehaviour
 {
     public float2 size;
     public int2 resolutions;
 
     [SerializeField]
-    public Procedural.Directions neighboringPlanes;
+    public Directions neighboringPlanes;
 
     public Material material;
 
@@ -25,7 +27,7 @@ public class LODPlaneDebug : MonoBehaviour
         NativeArray<float3> vertices = new NativeArray<float3>();
         NativeList<int> triangles = new NativeList<int>();
 
-        var LODPlane = new Procedural.LODPlane(transform.position, size, resolutions);
+        var LODPlane = new LODPlane(transform.position, size, resolutions);
         LODPlane.SetNeighbors(neighboringPlanes);
         LODPlane.ConstructPlane(quaternion.Euler(math.radians(transform.rotation.eulerAngles)), ref vertices, ref triangles, Allocator.Temp);
 
@@ -43,7 +45,7 @@ public class LODPlaneDebug : MonoBehaviour
         NativeArray<float3> vertices = new NativeArray<float3>();
         NativeList<int> triangles = new NativeList<int>();
 
-        var LODPlane = new Procedural.LODPlane(transform.position, size, resolutions);
+        var LODPlane = new LODPlane(transform.position, size, resolutions);
 
         LODPlane.SetNeighbors(neighboringPlanes);
         LODPlane.ConstructPlane(quaternion.Euler(math.radians(transform.rotation.eulerAngles)), ref vertices, ref triangles, Allocator.Temp);

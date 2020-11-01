@@ -1,6 +1,6 @@
 using Saitama.Physics2D;
 
-namespace Saitama.Procedural.QuadTree
+namespace Saitama.Procedural
 {
     public struct Branch
     {
@@ -20,20 +20,18 @@ namespace Saitama.Procedural.QuadTree
         public int FirstChildIndex  { get; set; }
 
         public AABB2D Bounds        { get; set; }
-        public int Depth            { get; set; }
         public int Index            { get; private set; }
 
         public bool HaveChild => (FirstChildIndex != -1);
         public bool IsRoot => (ParentIndex == -1);
         public bool IsLeaf => !HaveChild;
         
-        public Branch(in int index, in int parentIndex, in int firstChildIndex = -1, in AABB2D bounds = default, in int depth = 0)
+        public Branch(in int index, in int parentIndex, in int firstChildIndex = -1, in AABB2D bounds = default)
         {
             Index = index;
             ParentIndex = parentIndex;
             FirstChildIndex = firstChildIndex;
             Bounds = bounds;
-            Depth = depth;
         }
 
     }

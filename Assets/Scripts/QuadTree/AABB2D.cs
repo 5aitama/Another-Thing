@@ -39,6 +39,11 @@ namespace Saitama.Physics2D
         public float2 SECorner => Center + new float2(Extents.x, -Extents.y);
 
         /// <summary>
+        /// The size of bounding box.
+        /// </summary>
+        public float2 Size => Extents * 2f;
+
+        /// <summary>
         /// Create new 2D AABB.
         /// </summary>
         /// <param name="center">Center of the bounding box</param>

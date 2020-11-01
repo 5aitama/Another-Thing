@@ -1,4 +1,4 @@
-namespace Procedural
+namespace Saitama.Procedural
 {
     [System.Flags]
     public enum Directions

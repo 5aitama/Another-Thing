@@ -3,7 +3,7 @@ using Unity.Collections;
 
 using Saitama.Physics2D;
 
-namespace Saitama.Procedural.QuadTree
+namespace Saitama.Procedural
 {
     /// <summary>
     /// Simple quad tree implementation class.
@@ -11,14 +11,10 @@ namespace Saitama.Procedural.QuadTree
     public class QuadTree : System.IDisposable
     {
         /// <summary>
-        /// Center of the quad tree.
+        /// QuadTree boundary
         /// </summary>
-        public float2 Center { get; protected set; }
-
-        /// <summary>
-        /// The size of quad tree.
-        /// </summary>
-        public float2 Size { get; protected set; }
+        /// <value></value>
+        public AABB2D Bound { get; protected set; }
 
         /// <summary>
         /// Store all branches in the quad tree.
@@ -26,14 +22,9 @@ namespace Saitama.Procedural.QuadTree
         public NativeList<Branch> branches { get; protected set; }
 
         /// <summary>
-        /// Store distance for each level of details
+        /// Allocation type for branches native array.
         /// </summary>
-        protected NativeArray<float> lodsDistance;
-
-        /// <summary>
-        /// Allocation type for all native array in QuadTree.
-        /// </summary>
-        protected Allocator allocator;
+        public Allocator allocator { get; private set; }
 
         /// <summary>
         /// Create new quad tree
@@ -43,51 +34,40 @@ namespace Saitama.Procedural.QuadTree
         /// <param name="allocator">Allocation type for LODs distance array and branch array</param>
         public QuadTree(in float2 center, in float2 size, Allocator allocator)
         {
-            Center = center;
-            Size = size;
+            Bound = new AABB2D(center, size / 2f);
 
             branches = new NativeList<Branch>(allocator);
-
-            var rootBranchBounds = new AABB2D(center, Size / 2f);
-            branches.Add(new Branch(0, -1, -1, rootBranchBounds));
+            branches.Add(new Branch(0, -1, -1, Bound));
 
             this.allocator = allocator;
         }
 
         /// <summary>
-        /// Update the level of details distances
+        /// Update QuadTree geometry from multiple positions defined in <paramref name="positions"/>
         /// </summary>
-        /// <param name="radius"></param>
-        /// <param name="maxDepth">The maximum subdivision level of quad tree</param>
-        public void UpdateLODs(in float radius, in int maxDepth)
+        /// <param name="positions">Position array</param>
+        public void Construct(in NativeArray<float2> positions, in LODBuilder lodBuilder)
         {
-            if(lodsDistance.IsCreated)
-                lodsDistance.Dispose();
-            
-            lodsDistance = new NativeArray<float>(maxDepth, allocator, NativeArrayOptions.UninitializedMemory);
+            branches.RemoveRange(1, branches.Length);
+            lodBuilder.Build(out NativeArray<float> lodsDistance, Allocator.Temp);
 
-            for(var i = 0; i < maxDepth; i++)
-                lodsDistance[i] = radius * math.pow(2f, maxDepth - i);
+            ConstructRecursive(positions, lodsDistance);
         }
 
         /// <summary>
-        /// Update QuadTree geometry from multiple positions defined in <paramref name="targets"/>
+        /// Check if <paramref name="branch" /> can be splited into 4 little branch.
         /// </summary>
-        /// <param name="targets">Positions</param>
-        public void UpdateWithTargets(in NativeArray<float2> targets)
+        /// <param name="positions">Position array</param>
+        /// <param name="lodsDistance">LOD distance array</param>
+        /// <param name="branch">The branch to check</param>
+        /// <param name="depth">Current depth in the tree</param>
+        private bool BranchNeedSubdivide(in NativeArray<float2> positions, in NativeArray<float> lodsDistance, in Branch branch, in int depth)
         {
-            branches.RemoveRange(1, branches.Length);
-            Subdivide(targets);
-        }
-
-        
-        private bool BranchNeedSubdivide(in NativeArray<float2> targets, in Branch branch, in int depth)
-        {
-            for(var i = 0; i < targets.Length; i++)
+            for(var i = 0; i < positions.Length; i++)
             {
                 var lod = 0;
 
-                var dist = math.distance(branch.Bounds.Center, targets[i]);
+                var dist = math.distance(branch.Bounds.Center, positions[i]);
 
                 for(var j = 0; j < lodsDistance.Length && dist < lodsDistance[j]; j++)
                     lod = lod > j ? lod : j;
@@ -99,23 +79,29 @@ namespace Saitama.Procedural.QuadTree
             return false;
         }
 
-        private void Subdivide(in NativeArray<float2> targets, in int branchIndex = 0, int depth = 0)
+        /// <summary>
+        /// Construct quad tree branch.
+        /// </summary>
+        /// <param name="positions">Position array</param>
+        /// <param name="lodsDistance">LOD disance array</param>
+        /// <param name="branchIndex">Current branch index</param>
+        /// <param name="depth">Current tree depth</param>
+        private void ConstructRecursive(in NativeArray<float2> positions, in NativeArray<float> lodsDistance, in int branchIndex = 0, int depth = 0)
         {
             var currentBranch = branches.ElementAt(branchIndex);
 
-            if(!BranchNeedSubdivide(targets, currentBranch, depth))
+            if(!BranchNeedSubdivide(positions, lodsDistance, currentBranch, depth))
                 return;
 
             var childsBounds = SplitBounds(currentBranch.Bounds);
             var branchesLength = branches.Length;
 
             currentBranch.FirstChildIndex = branchesLength;
-            currentBranch.Depth = depth++;
 
-            var sw = new Branch(branchesLength    , branchIndex, -1, childsBounds[0], depth);
-            var nw = new Branch(branchesLength + 1, branchIndex, -1, childsBounds[1], depth);
-            var ne = new Branch(branchesLength + 2, branchIndex, -1, childsBounds[2], depth);
-            var se = new Branch(branchesLength + 3, branchIndex, -1, childsBounds[3], depth);
+            var sw = new Branch(branchesLength    , branchIndex, -1, childsBounds[0]);
+            var nw = new Branch(branchesLength + 1, branchIndex, -1, childsBounds[1]);
+            var ne = new Branch(branchesLength + 2, branchIndex, -1, childsBounds[2]);
+            var se = new Branch(branchesLength + 3, branchIndex, -1, childsBounds[3]);
 
             // Add new branches into our array
             branches.AddRange(new NativeArray<Branch>(new Branch[]
@@ -126,14 +112,15 @@ namespace Saitama.Procedural.QuadTree
                 se,
             }, Allocator.Temp));
 
-            // Update our current branch
+            // Update current branch
             branches.ElementAt(branchIndex) = currentBranch;
 
-            // Subdivide each of them...
-            Subdivide(targets, sw.Index, depth);
-            Subdivide(targets, nw.Index, depth);
-            Subdivide(targets, ne.Index, depth);
-            Subdivide(targets, se.Index, depth);
+            depth++;
+            
+            ConstructRecursive(positions, lodsDistance, sw.Index, depth);
+            ConstructRecursive(positions, lodsDistance, nw.Index, depth);
+            ConstructRecursive(positions, lodsDistance, ne.Index, depth);
+            ConstructRecursive(positions, lodsDistance, se.Index, depth);
         }
 
         /// <summary>
@@ -153,17 +140,26 @@ namespace Saitama.Procedural.QuadTree
             };
         }
 
+        /// <summary>
+        /// Indicate which branches are neighboring <paramref name="branch" />.
+        /// </summary>
+        /// <returns>
+        /// A byte where the 4 first bits correspond to 4 direction (in this order: West, North, East, South).
+        /// When a bit is equal to 1 that indicate that have another branch that neighbouring <paramref name="branch" />.
+        /// </returns>
         public byte NeighborConfigForBranch(in Branch branch)
         {
+            if(branch.IsRoot)
+                return 0;
+            
             var parent = branches[branch.ParentIndex];
-            var generalConf = (byte)0;
-            var branchConf = (byte)0;
+            var generalConf = 0;
+            var branchConf = 0;
 
-            // Get parent configuration
             for(var i = 0; i < 4; i++)
             {
-                branchConf |= (byte)((parent.FirstChildIndex + i == branch.Index ? 0x1 : 0x0) << i);
-                generalConf |= (byte)((branches[parent.FirstChildIndex + i].IsLeaf ? 0x0 : 0x1) << i);
+                branchConf |= (parent.FirstChildIndex + i == branch.Index ? 0x1 : 0x0) << i;
+                generalConf |= (branches[parent.FirstChildIndex + i].IsLeaf ? 0x0 : 0x1) << i;
             }
 
             switch(branchConf)

@@ -2,31 +2,34 @@
 using Unity.Mathematics;
 using Unity.Collections;
 
-using Saitama.Procedural.QuadTree;
+using Saitama.Procedural;
 
-public class QuadTreeTester : MonoBehaviour
+public class QuadTreeDebugger : MonoBehaviour
 {
-    public float2 position = 0f;
     public Transform[] targets;
-    public float2 size = 16f;
-    public float radius = 1f;
-    public int maxLODs = 4;
 
-    [Space]
+    [Range(0f, 32f)]
+    public float radius = 8f;
 
-    public int leafIndex = 0;
+    [Range(1, 32)]
+    public int maxLODs = 8;
+
+    [Range(1, 32)]
+    public int planeResolution = 8;
 
     private void OnDrawGizmos()
     {
-        var tree = new QuadTree(position, size, Allocator.Temp);
-        tree.UpdateLODs(radius, maxLODs);
+        var pos = (float3)transform.position;
+        var size = (float3)transform.localScale;
 
-        var arr = new NativeArray<float2>(targets.Length, Allocator.Temp);
+        var tree = new QuadTree(pos.xy, size.xy, Allocator.Temp);
+
+        var positions = new NativeArray<float2>(targets.Length, Allocator.Temp);
 
         for(var i = 0; i < targets.Length; i++)
-            arr[i] = ((float3)targets[i].position).xy;
+            positions[i] = ((float3)targets[i].position).xy;
 
-        tree.UpdateWithTargets(arr);
+        tree.Construct(positions, new LODBuilder(radius, maxLODs));
         
         var branches = tree.branches;
 
@@ -54,19 +57,17 @@ public class QuadTreeTester : MonoBehaviour
             Gizmos.DrawLine(se, sw);
 
         }
-
-        tree.Dispose();
     }
 
     private void DebugBranch(in QuadTree tree, in Branch branch, in NativeArray<Branch> branches)
     {
         var conf = tree.NeighborConfigForBranch(branch);
-        var lodPlane = new Procedural.LODPlane(new float3(branch.Bounds.SWCorner, 0), branch.Bounds.Extents * 2f, 8);
+        var lodPlane = new LODPlane(new float3(branch.Bounds.SWCorner, 0), branch.Bounds.Extents * 2f, planeResolution);
         
         NativeArray<float3> v = new NativeArray<float3>();
         NativeList<int> t = new NativeList<int>();
 
-        lodPlane.SetNeighbors((Procedural.Directions)conf);
+        lodPlane.SetNeighbors((Directions)conf);
         lodPlane.ConstructPlane(quaternion.identity, ref v, ref t, Allocator.Temp);
 
         for(var i = 0; i < t.Length; i += 3)
