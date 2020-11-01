@@ -5,9 +5,18 @@ namespace Procedural
 {
     public class LODPlane
     {
+        public float3 Position  { get; private set; }
         public float2 Size      { get; private set; }
         public int2 Resolution  { get; private set; }
         public byte Neighbors   { get; private set; }
+
+        public LODPlane(in float3 position, in float2 size, in int2 resolution)
+        {
+            Position = position;
+            Size = size;
+            Resolution = resolution;
+        }
+
 
         public static int[] GetSquareTrianglesFor(
             in Directions planeConfig, 
@@ -31,6 +40,8 @@ namespace Procedural
                 }
             }
             
+            // Faire virement
+            // Consulter le relever de compte
             var edgeIndices = new int[]
             {
                 squareIndex - planeResolution.x - 1, // • Bottom left
@@ -115,12 +126,6 @@ namespace Procedural
             }
         }
 
-        public LODPlane(in float2 size, in int2 resolution)
-        {
-            Size = size;
-            Resolution = resolution;
-        }
-
         public void SetNeighbors(Directions neighbors)
         {
             Neighbors = (byte)neighbors;
@@ -129,12 +134,7 @@ namespace Procedural
         public bool HavePlaneAt(in Directions directions)
             => ((byte)directions & Neighbors) == (byte)directions;
 
-        public void ConstructPlane(
-            in float3 position, 
-            in quaternion rotation, 
-            out NativeArray<float3> vertices, 
-            out NativeList<int> triangles, 
-            Allocator allocator)
+        public void ConstructPlane(in quaternion rotation, ref NativeArray<float3> vertices, ref NativeList<int> triangles, Allocator allocator)
         {
             
             var pointAmount = Resolution.Amount();
@@ -142,7 +142,7 @@ namespace Procedural
 
             var edgeVertexAmount = math.max(Resolution.x, Resolution.y);
 
-            var _vertices = new NativeArray<float3>(pointAmount, allocator, NativeArrayOptions.UninitializedMemory);
+            var _vertices = new NativeArray<float3>(pointAmount, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
             var sides = new NativeArray<float3>(edgeVertexAmount * 4, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
 
             var sideArraysCounter = new int4(0);
@@ -152,9 +152,9 @@ namespace Procedural
             for(var i = 0; i < pointAmount; i++)
             {
                 var localPos = i.To2D(Resolution);
-                var worldPos = localPos * offset + position.xy;
+                var worldPos = localPos * offset + Position.xy;
                 
-                _vertices[i] = math.mul(rotation, new float3(worldPos.xy, position.z));
+                _vertices[i] = math.mul(rotation, new float3(worldPos.xy, Position.z));
 
                 var minEdges = localPos == 0;
                 var maxEdges = localPos == Resolution - 1;
@@ -164,25 +164,25 @@ namespace Procedural
                 if(minEdges.x && !minEdges.y && HavePlaneAt(Directions.West))
                 {
                     var p = worldPos - new float2(0, offset.y) / 2f;
-                    sides[sideArraysCounter.x++] = math.mul(rotation, new float3(p.xy, position.z));
+                    sides[sideArraysCounter.x++] = math.mul(rotation, new float3(p.xy, Position.z));
                 }
 
                 if(maxEdges.y && !minEdges.x && HavePlaneAt(Directions.North))
                 {
                     var p = worldPos - new float2(offset.x, 0) / 2f;
-                    sides[edgeVertexAmount + sideArraysCounter.y++] = math.mul(rotation, new float3(p.xy, position.z));
+                    sides[edgeVertexAmount + sideArraysCounter.y++] = math.mul(rotation, new float3(p.xy, Position.z));
                 }
 
                 if(maxEdges.x && !minEdges.y && HavePlaneAt(Directions.East))
                 {
                     var p = worldPos - new float2(0, offset.y) / 2f;
-                    sides[edgeVertexAmount * 2 + sideArraysCounter.z++] = math.mul(rotation, new float3(p.xy, position.z));
+                    sides[edgeVertexAmount * 2 + sideArraysCounter.z++] = math.mul(rotation, new float3(p.xy, Position.z));
                 }
 
                 if(!minEdges.x && minEdges.y && HavePlaneAt(Directions.South))
                 {
                     var p = worldPos - new float2(offset.x, 0) / 2f;
-                    sides[edgeVertexAmount * 3 + sideArraysCounter.w++] = math.mul(rotation, new float3(p.xy, position.z));
+                    sides[edgeVertexAmount * 3 + sideArraysCounter.w++] = math.mul(rotation, new float3(p.xy, Position.z));
                 }
 
                 #endregion
@@ -216,7 +216,10 @@ namespace Procedural
                 lastStartIndex += sideArraysCounter[i];
             }
 
-            vertices = finalVertexArray;
+            if(vertices.IsCreated)
+                vertices.CopyFrom(finalVertexArray);
+            else
+                vertices = new NativeArray<float3>(finalVertexArray, allocator);
         }
     }
 }

@@ -22,9 +22,12 @@ public class LODPlaneDebug : MonoBehaviour
         
         planeGameObject.AddComponent<MeshRenderer>().material = material;
 
-        var LODPlane = new Procedural.LODPlane(size, resolutions);
+        NativeArray<float3> vertices = new NativeArray<float3>();
+        NativeList<int> triangles = new NativeList<int>();
+
+        var LODPlane = new Procedural.LODPlane(transform.position, size, resolutions);
         LODPlane.SetNeighbors(neighboringPlanes);
-        LODPlane.ConstructPlane(transform.position, quaternion.Euler(math.radians(transform.rotation.eulerAngles)), out NativeArray<float3> vertices, out NativeList<int> triangles, Allocator.Temp);
+        LODPlane.ConstructPlane(quaternion.Euler(math.radians(transform.rotation.eulerAngles)), ref vertices, ref triangles, Allocator.Temp);
 
         m.SetVertices(vertices);
         m.SetIndices<int>(triangles, MeshTopology.Triangles, 0);
@@ -37,10 +40,13 @@ public class LODPlaneDebug : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        var LODPlane = new Procedural.LODPlane(size, resolutions);
+        NativeArray<float3> vertices = new NativeArray<float3>();
+        NativeList<int> triangles = new NativeList<int>();
+
+        var LODPlane = new Procedural.LODPlane(transform.position, size, resolutions);
 
         LODPlane.SetNeighbors(neighboringPlanes);
-        LODPlane.ConstructPlane(transform.position, quaternion.Euler(math.radians(transform.rotation.eulerAngles)), out NativeArray<float3> vertices, out NativeList<int> triangles, Allocator.Temp);
+        LODPlane.ConstructPlane(quaternion.Euler(math.radians(transform.rotation.eulerAngles)), ref vertices, ref triangles, Allocator.Temp);
 
         // Debug.Log($"LODPlane vertex amount: {vertices.Length}, triangle amount: {triangles.Length} ({triangles.Length * 3} indices)");
 
