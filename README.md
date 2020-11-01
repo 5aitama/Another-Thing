@@ -10,13 +10,23 @@ I made this project because I love the technical challenge it imposes and I love
 
 It also allows me to show my skills in C# and with the [Unity](https://unity.com/) game engine.
 
-## Algorithms used in this project
+## How I do to
 
+### Generate infinite number of planets
+*No description for now, please comme back later or read the code...*
+
+### Generate Planet
+*No description for now, please comme back later or read the code...*
+
+### Generate Map
+*No description for now, please comme back later or read the code...*
+
+## Algorithms & Techniques used
 
 | Name | File |
 |------|------|
-| **QuadTree** |    [QuadTree.cs](/Assets/Scripts/QuadTree/QuadTree.cs)   |
-
+| **QuadTree** | [QuadTree.cs](/Assets/Scripts/QuadTree/QuadTree.cs)       |
+| **LOD** (level of detail) | [LODBuilder.cs](/Assets/Scripts/LODBuilder/LODBuilder.cs) |
 
 ---
 Thanks to [Keksoj](https://github.com/Keksoj) for telling me to put readme in my projects.
